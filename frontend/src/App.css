@@ -68,7 +68,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px dashed #5aac44; /* Borde punteado verde */
+  border: 2px dashed #5aac44;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
@@ -93,7 +93,7 @@
   margin-bottom: 12px;
   border-radius: 50% 50% 0 0 / 30% 30% 0 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  cursor: move;
+  cursor: pointer; /* Cambiado a pointer para indicar que es clickeable */
   position: relative;
   display: flex;
   justify-content: space-between;
@@ -124,9 +124,48 @@
   padding-right: 10px;
 }
 
+.card-container {
+  min-height: 50px;
+}
+
 .card-actions {
   display: flex;
   gap: 10px;
+}
+
+.card-details {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #ccc;
+}
+
+.card-description {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+}
+
+.card-due-date {
+  font-size: 0.8em;
+  color: #888;
+  margin-top: 5px;
+}
+
+.card.overdue {
+  border: 2px solid #ff4444;
+}
+
+.card-tags {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.tag {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8em;
+  color: white;
 }
 
 /* Estilo de los iconos */
@@ -154,7 +193,7 @@
   transform: scale(1.2);
 }
 
-/* Estilo de los botones (solo para "Añadir tarjeta" y modales) */
+/* Estilo de los botones */
 button {
   padding: 8px 12px;
   background: #5aac44;

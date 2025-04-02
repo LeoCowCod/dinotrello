@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDrop } from 'react-dnd';
-import { FaEdit, FaTrash } from 'react-icons/fa'; // Importar iconos
+import { FaEdit, FaTrash } from 'react-icons/fa';
 import Card from './Card';
 
 const ItemType = 'CARD';
@@ -23,13 +23,39 @@ function List({ list, setBoard }) {
     },
   });
 
+  const moveCardInList = async (fromIndex, toIndex) => {
+    const updatedCards = [...list.cards];
+    const [movedCard] = updatedCards.splice(fromIndex, 1);
+    updatedCards.splice(toIndex, 0, movedCard);
+    await fetch(`http://localhost:5000/api/lists/${list.id}/reorder`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cards: updatedCards }),
+    });
+    setBoard((prev) => ({
+      ...prev,
+      lists: prev.lists.map((l) =>
+        l.id === list.id ? { ...l, cards: updatedCards } : l
+      ),
+    }));
+  };
+
   const addCard = async () => {
     const content = prompt('Contenido de la tarjeta:');
     if (!content) return;
+    const description = prompt('Descripción (opcional):') || '';
+    const dueDate = prompt('Fecha de vencimiento (YYYY-MM-DD, opcional):') || null;
+    const tagsInput = prompt('Etiquetas (separadas por coma, ej. "Urgente,#ff0000"):') || '';
+    const tags = tagsInput
+      ? tagsInput.split(',').map((tag) => {
+          const [name, color = '#cccccc'] = tag.trim().split(/,(?=#)/);
+          return { name, color };
+        })
+      : [];
     const res = await fetch(`http://localhost:5000/api/lists/${list.id}/cards`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, description, dueDate, tags }),
     });
     const newCard = await res.json();
     setBoard((prev) => ({
@@ -57,9 +83,7 @@ function List({ list, setBoard }) {
     }));
   };
 
-  const deleteList = () => {
-    setShowDeleteModal(true);
-  };
+  const deleteList = () => setShowDeleteModal(true);
 
   const confirmDelete = async () => {
     await fetch(`http://localhost:5000/api/lists/${list.id}`, {
@@ -73,9 +97,7 @@ function List({ list, setBoard }) {
     setShowDeleteModal(false);
   };
 
-  const cancelDelete = () => {
-    setShowDeleteModal(false);
-  };
+  const cancelDelete = () => setShowDeleteModal(false);
 
   return (
     <div ref={drop} className="list" style={{ backgroundColor: list.color }}>
@@ -86,9 +108,18 @@ function List({ list, setBoard }) {
           <FaTrash className="icon delete-icon" onClick={deleteList} />
         </div>
       </div>
-      {list.cards.map((card) => (
-        <Card key={card.id} card={card} listId={list.id} setBoard={setBoard} />
-      ))}
+      <div className="card-container">
+        {list.cards.map((card, index) => (
+          <Card
+            key={card.id}
+            card={card}
+            listId={list.id}
+            index={index}
+            moveCardInList={moveCardInList}
+            setBoard={setBoard}
+          />
+        ))}
+      </div>
       <button onClick={addCard}>+ Añadir tarjeta</button>
       {showDeleteModal && (
         <div className="modal">

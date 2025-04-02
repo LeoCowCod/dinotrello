@@ -52,22 +52,41 @@ app.delete('/api/lists/:listId', (req, res) => {
 // Añadir una tarjeta
 app.post('/api/lists/:listId/cards', (req, res) => {
   const listId = parseInt(req.params.listId);
-  const { content } = req.body;
+  const { content, description, dueDate, tags } = req.body;
   const list = boards[0].lists.find((l) => l.id === listId);
   if (!list) return res.status(404).send('Lista no encontrada');
-  const newCard = { id: Date.now(), content };
+  const newCard = {
+    id: Date.now(),
+    content,
+    description: description || '',
+    dueDate: dueDate || null,
+    tags: tags || [],
+  };
   list.cards.push(newCard);
   res.json(newCard);
+});
+
+// Reordenar tarjetas dentro de una lista
+app.put('/api/lists/:listId/reorder', (req, res) => {
+  const listId = parseInt(req.params.listId);
+  const { cards } = req.body;
+  const list = boards[0].lists.find((l) => l.id === listId);
+  if (!list) return res.status(404).send('Lista no encontrada');
+  list.cards = cards;
+  res.json(list);
 });
 
 // Editar una tarjeta
 app.put('/api/cards/:cardId', (req, res) => {
   const cardId = parseInt(req.params.cardId);
-  const { content } = req.body;
+  const { content, description, dueDate, tags } = req.body;
   for (const list of boards[0].lists) {
     const card = list.cards.find((c) => c.id === cardId);
     if (card) {
-      card.content = content;
+      card.content = content || card.content;
+      card.description = description !== undefined ? description : card.description;
+      card.dueDate = dueDate !== undefined ? dueDate : card.dueDate;
+      card.tags = tags !== undefined ? tags : card.tags;
       return res.json(card);
     }
   }
